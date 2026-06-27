@@ -40,8 +40,15 @@ export async function signUpWithEmail(input: unknown): Promise<ActionResult> {
   return ok();
 }
 
-/** Start the GitHub OAuth flow and redirect the browser to the provider. */
-export async function signInWithGitHub(next = "/"): Promise<void> {
+/**
+ * Start the GitHub OAuth flow. On success this redirects the browser to GitHub
+ * (the function never returns). On failure — e.g. the provider isn't enabled in
+ * Supabase — it returns a friendly result so the UI can show a toast instead of
+ * crashing the page.
+ */
+export async function signInWithGitHub(
+  next = "/",
+): Promise<ActionResult | void> {
   const supabase = await createClient();
   const origin = (await headers()).get("origin") ?? getSiteUrl();
   const { data, error } = await supabase.auth.signInWithOAuth({
@@ -50,7 +57,13 @@ export async function signInWithGitHub(next = "/"): Promise<void> {
       redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
     },
   });
-  if (error) throw error;
+  if (error) {
+    return fail(
+      /not enabled/i.test(error.message)
+        ? "GitHub sign-in isn't enabled yet. Use email, or enable GitHub in Supabase."
+        : error.message,
+    );
+  }
   if (data.url) redirect(data.url);
 }
 

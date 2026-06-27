@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { signInWithGitHub } from "@/features/auth/actions";
 
@@ -20,7 +21,12 @@ export function GitHubButton({ next = "/" }: { next?: string }) {
       variant="outline"
       className="w-full"
       disabled={pending}
-      onClick={() => start(() => signInWithGitHub(next))}
+      onClick={() =>
+        start(async () => {
+          const res = await signInWithGitHub(next);
+          if (res && !res.ok) toast.error(res.error ?? "GitHub sign-in failed");
+        })
+      }
     >
       <GithubIcon className="size-4" />
       Continue with GitHub
