@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   Home,
   Flame,
+  Clapperboard,
   ListVideo,
   History,
   ThumbsUp,
@@ -17,6 +18,7 @@ import { useUIStore } from "@/stores/ui-store";
 
 const PRIMARY = [
   { href: "/", label: "Home", icon: Home },
+  { href: "/reels", label: "Reels", icon: Clapperboard },
   { href: "/trending", label: "Trending", icon: Flame },
   { href: "/subscriptions", label: "Subscriptions", icon: ListVideo },
 ];
@@ -31,31 +33,37 @@ const YOU = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const open = useUIStore((s) => s.sidebarOpen);
-  const setSidebar = useUIStore((s) => s.setSidebar);
+  const sidebarOpen = useUIStore((s) => s.sidebarOpen);
+  const mobileNavOpen = useUIStore((s) => s.mobileNavOpen);
+  const setMobileNav = useUIStore((s) => s.setMobileNav);
+
+  const closeMobile = () => setMobileNav(false);
 
   return (
     <>
       {/* Mobile drawer backdrop */}
-      {open && (
+      {mobileNavOpen && (
         <div
           className="fixed inset-0 top-14 z-20 bg-black/50 md:hidden"
-          onClick={() => setSidebar(false)}
+          onClick={closeMobile}
         />
       )}
 
       <aside
         className={cn(
           "fixed left-0 top-14 z-20 h-[calc(100dvh-3.5rem)] w-60 shrink-0 overflow-y-auto border-r border-border bg-background p-3 transition-transform",
-          open ? "translate-x-0" : "-translate-x-full md:hidden",
+          // Mobile: controlled by the drawer state.
+          mobileNavOpen ? "translate-x-0" : "-translate-x-full",
+          // Desktop: controlled by the persistent sidebar collapse state.
+          sidebarOpen ? "md:translate-x-0" : "md:-translate-x-full",
         )}
       >
-        <Section items={PRIMARY} pathname={pathname} />
+        <Section items={PRIMARY} pathname={pathname} onNavigate={closeMobile} />
         <div className="my-3 border-t border-border" />
         <p className="px-3 pb-1 pt-2 text-xs font-semibold text-muted-foreground">
           You
         </p>
-        <Section items={YOU} pathname={pathname} />
+        <Section items={YOU} pathname={pathname} onNavigate={closeMobile} />
       </aside>
     </>
   );
@@ -64,9 +72,11 @@ export function Sidebar() {
 function Section({
   items,
   pathname,
+  onNavigate,
 }: {
   items: { href: string; label: string; icon: React.ElementType }[];
   pathname: string;
+  onNavigate: () => void;
 }) {
   return (
     <nav className="flex flex-col gap-0.5">
@@ -76,6 +86,7 @@ function Section({
           <Link
             key={href}
             href={href}
+            onClick={onNavigate}
             className={cn(
               "flex items-center gap-4 rounded-lg px-3 py-2.5 text-sm transition-colors",
               active

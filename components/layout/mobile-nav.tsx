@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Flame, UploadCloud, ListVideo, History } from "lucide-react";
+import { Home, Clapperboard, UploadCloud, ListVideo, History } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/trending", label: "Trending", icon: Flame },
+  { href: "/reels", label: "Reels", icon: Clapperboard },
   { href: "/upload", label: "Upload", icon: UploadCloud },
   { href: "/subscriptions", label: "Subs", icon: ListVideo },
   { href: "/history", label: "History", icon: History },

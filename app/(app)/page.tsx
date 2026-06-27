@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { PageContainer } from "@/components/page-container";
 import { VideoGrid } from "@/features/videos/components/video-grid";
+import { CategoryChips } from "@/features/videos/components/category-chips";
 import { getVideos, getVideosByCategory } from "@/features/videos/queries";
-import { cn } from "@/lib/utils";
 
 // Always reflect the latest uploads.
 export const dynamic = "force-dynamic";
@@ -35,27 +34,7 @@ export default async function HomePage({
 
   return (
     <PageContainer>
-      <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
-        {CHIPS.map((chip) => {
-          const value = chip.toLowerCase();
-          const isActive = value === active;
-          return (
-            <Link
-              key={chip}
-              href={value === "all" ? "/" : `/?category=${value}`}
-              scroll={false}
-              className={cn(
-                "shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-foreground text-background"
-                  : "bg-secondary text-secondary-foreground hover:bg-accent",
-              )}
-            >
-              {chip}
-            </Link>
-          );
-        })}
-      </div>
+      <CategoryChips chips={CHIPS} active={active} />
 
       {items.length === 0 ? (
         <p className="py-20 text-center text-muted-foreground">

@@ -62,6 +62,33 @@ export async function getTrendingVideos({
   return { items, hasMore, nextCursor: hasMore ? page + 1 : null };
 }
 
+/**
+ * Short-form videos for the Reels feed: anything <= 60s, plus YouTube Shorts
+ * links (whose duration is often unknown / 0). Newest first.
+ */
+export async function getReels({
+  page = 0,
+  pageSize = PAGE_SIZE,
+}: ListOptions = {}): Promise<Paginated<VideoWithCreator>> {
+  const supabase = await createClient();
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
+
+  const { data, error } = await supabase
+    .from("videos")
+    .select(VIDEO_SELECT)
+    .eq("visibility", "public")
+    .eq("is_removed", false)
+    .or("and(duration.gt.0,duration.lte.60),video_url.ilike.*shorts*")
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (error) throw error;
+  const items = (data ?? []) as unknown as VideoWithCreator[];
+  const hasMore = items.length === pageSize;
+  return { items, hasMore, nextCursor: hasMore ? page + 1 : null };
+}
+
 /** Public videos that carry a given category tag (home-page chip filter). */
 export async function getVideosByCategory(
   category: string,

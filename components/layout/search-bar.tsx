@@ -6,7 +6,16 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-export function SearchBar({ className }: { className?: string }) {
+export function SearchBar({
+  className,
+  autoFocus = false,
+  onSubmitted,
+}: {
+  className?: string;
+  autoFocus?: boolean;
+  /** Called after a successful search navigation (e.g. to close a mobile overlay). */
+  onSubmitted?: () => void;
+}) {
   const router = useRouter();
   const params = useSearchParams();
   const [q, setQ] = useState(params.get("q") ?? "");
@@ -17,7 +26,10 @@ export function SearchBar({ className }: { className?: string }) {
       onSubmit={(e) => {
         e.preventDefault();
         const term = q.trim();
-        if (term) router.push(`/search?q=${encodeURIComponent(term)}`);
+        if (term) {
+          router.push(`/search?q=${encodeURIComponent(term)}`);
+          onSubmitted?.();
+        }
       }}
     >
       <div className="flex items-center">
@@ -26,6 +38,7 @@ export function SearchBar({ className }: { className?: string }) {
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search videos and creators"
           aria-label="Search"
+          autoFocus={autoFocus}
           className="h-10 rounded-l-full rounded-r-none border-r-0 pl-4"
         />
         <Button
